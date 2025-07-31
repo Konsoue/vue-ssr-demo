@@ -119,7 +119,7 @@ const uploadFile = async (chunks, fileHash) => {
 /**
  * 使用 web worker 计算文件哈希值
  * 使用 sharedArrayBuffer 传递数据，实现内存数据共享
- * @param chunks 
+ * @param chunks
  */
 const fileHashCompute = async (chunks) => {
   const worker = new Worker(
@@ -150,8 +150,7 @@ const fileChange = async (event) => {
       file: filesList.value[0],
       // percentCallback: (percent) => console.log(percent),
     });
-    fileHashCompute(chunks);
-
+    const fileHash = await fileHashCompute(chunks);
   } else {
     console.log("No files selected");
   }
