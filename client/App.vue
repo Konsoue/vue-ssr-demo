@@ -2,6 +2,7 @@
 import { reactive, onServerPrefetch, onMounted, inject } from "vue";
 import { fetchData } from "./api";
 import { SSRState } from "./utils/SSRState";
+import FileUpload from "./FileUpload.vue";
 
 const show = reactive({ value: true });
 const user = reactive({
@@ -38,6 +39,7 @@ onMounted(async () => {
     <a v-if="show.value" href="https://vuejs.org/" target="_blank">
       <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
     </a>
+    <FileUpload />
   </div>
 </template>
 

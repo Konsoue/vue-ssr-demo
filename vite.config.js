@@ -23,6 +23,13 @@ export default defineConfig(({ mode, isPreview, command, isSsrBuild }) => {
     // 客户端构建
     return {
       plugins: [vue()],
+      // 允许crossOriginIsolated
+      server: {
+        headers: {
+          'Cross-Origin-Opener-Policy': 'same-origin',
+          'Cross-Origin-Embedder-Policy': 'require-corp',
+        },
+      },
       build: {
         outDir: 'dist/client',
         rollupOptions: {
