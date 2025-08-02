@@ -1,4 +1,4 @@
-import { IS_SSR } from '../utils/env'
+import { IS_SSR, SSR_BASE_URL } from '../utils/env'
 
 // utils/api.js
 let fetchImplementation
@@ -20,5 +20,5 @@ if (!IS_SSR) {
 }
 
 export async function fetchData(url, options) {
-  return fetchImplementation(`${IS_SSR ? 'http://localhost:3000' : ''}${url}`, options)
+  return fetchImplementation(`${IS_SSR ? SSR_BASE_URL : ''}${url}`, options)
 }

@@ -1,6 +1,6 @@
 import { File_SHA256SUM } from "../utils";
 
-const chunks = []
+let chunks = []
 const mergeFileChunks = async (chunks) => {
   const totalSize = chunks.reduce(
     (sum, chunk) => sum + chunk.byteLength,
@@ -19,11 +19,12 @@ const mergeFileChunks = async (chunks) => {
 
 
 self.onmessage = async function (event) {
-  if (event.data === 'merge') { 
+  if (event.data === 'merge') {
     const fileChunks = await mergeFileChunks(chunks)
     const fileHash = await File_SHA256SUM(fileChunks.buffer);
+    chunks = []
     self.postMessage(fileHash);
-  }else {
+  } else {
     chunks.push(event.data)
   }
 }
