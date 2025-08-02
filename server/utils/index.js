@@ -52,10 +52,31 @@ const checkFileSHA256 = async (path, checkHash) => {
   })
 }
 
+const removeFile = async (path) => {
+  try {
+    await fs.promises.unlink(path)
+    return true
+  } catch (error) {
+    console.log(`removeFile ${path} error: `, error)
+    return false
+  }
+}
+
+const removeEmptyDir = async (path) => {
+  try {
+    await fs.promises.rmdir(path)
+    return true
+  } catch (error) {
+    console.log(`removeEmptyDir ${path} error: `, error)
+    return false
+  }
+}
 
 module.exports = {
   isFileOrDirExit,
   createDir,
   getFilesStatFromDir,
-  checkFileSHA256
+  checkFileSHA256,
+  removeFile,
+  removeEmptyDir
 }

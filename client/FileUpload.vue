@@ -92,6 +92,7 @@ const chunkReadFile = async ({
 
 // 找断点
 const findNextIndex = (indexList = [], cur) => {
+  console.log("findNextIndex", indexList)
   // 判断后端分片数据是连续的，不连续选出断点
   for (let i = 1, len = indexList.length; i < len; i++) {
     if (indexList[i - 1] + 1 === indexList[i]) continue
@@ -118,7 +119,7 @@ const uploadFile = async ({
   let finish = false
   let maxUploadRetry = 100
   for (let i = 0, len = chunks.length; i < len; ) {
-    console.log("for i=", i)
+    console.log("for i=", i, len)
     const chunk = chunks[i]
     const formData = new FormData()
     formData.append("fileChunk", new Blob([chunk.buffer]))
@@ -141,7 +142,9 @@ const uploadFile = async ({
         maxUploadRetry--
         continue
       }
-      const indexList = data.indexList.map((i) => Number(i)).sort()
+      const indexList = data.indexList
+        .map((i) => Number(i))
+        .sort((a, b) => a - b)
       if (indexList.length === len) {
         finish = true
         break

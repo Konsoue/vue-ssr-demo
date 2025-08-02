@@ -1,6 +1,7 @@
 const path = require('path')
 const fs = require('fs')
-const { isFileOrDirExit, createDir, getFilesStatFromDir, checkFileSHA256 } = require('../utils')
+const crypto = require('crypto')
+const { isFileOrDirExit, createDir, getFilesStatFromDir, checkFileSHA256, removeFile, removeEmptyDir } = require('../utils')
 
 
 const FILE_STATUS = {
@@ -50,18 +51,50 @@ const mergeChunkFile = async (fileHash, fileExt) => {
     if (!await isFileOrDirExit(chunkFileDirPath)) {
       throw new Error('没上传过相关文件')
     } else {
-      const writeStream = fs.createWriteStream(zipFilePath)
-      const fileList = await getFilesStatFromDir(chunkFileDirPath)
-      for (let chunkFileName of fileList) {
-        const chunkPath = path.join(chunkFileDirPath, chunkFileName)
-        const readStream = fs.createReadStream(chunkPath)
-        await new Promise((resolve, reject) => {
-          readStream.pipe(writeStream, { end: false })
-          readStream.on('end', resolve)
-          readStream.on('error', reject)
+      return new Promise(async (resolve, reject) => {
+        const writeStream = fs.createWriteStream(zipFilePath)
+        let fileList = await getFilesStatFromDir(chunkFileDirPath)
+        fileList = fileList.map(n => Number(n)).sort((a, b) => a - b)
+        const hash = crypto.createHash('sha256')
+        writeStream.on('finish', async () => {
+          const finishHash = hash.digest('hex')
+          if (finishHash === fileHash) {
+            resolve({
+              status: FILE_STATUS.FINISH,
+              ok: true
+            })
+            for (let chunkFileName of fileList) {
+              await removeFile(path.join(chunkFileDirPath, String(chunkFileName)))
+            }
+            await removeEmptyDir(chunkFileDirPath)
+          } else {
+            await removeFile(zipFilePath)
+            resolve({
+              status: FILE_STATUS.NO_FINISH,
+              ok: false
+            })
+          }
         })
-      }
-      writeStream.end()
+        writeStream.on('error', (err) => {
+          reject({
+            status: FILE_STATUS.NO_FINISH,
+            ok: false
+          })
+        })
+        for (let chunkFileName of fileList) {
+          const chunkPath = path.join(chunkFileDirPath, String(chunkFileName))
+          const readStream = fs.createReadStream(chunkPath)
+          await new Promise((resolve, reject) => {
+            readStream.on('data', (chunk) => {
+              writeStream.write(chunk)
+              hash.update(chunk)
+            })
+            readStream.on('end', resolve)
+            readStream.on('error', reject)
+          })
+        }
+        writeStream.end()
+      })
     }
   }
 }
